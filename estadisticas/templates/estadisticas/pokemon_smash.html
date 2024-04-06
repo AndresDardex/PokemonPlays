@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <a href="http://localhost:3001/estadisticas/" class="text-decoration-none">
+    <title>Pokémon TCG</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'estadisticas\css\styles.css' %}">
+    <style>
+        .pokemon {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-image: url('{{ pokemon_image_url }}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-light">Pokémon TCG</h1>
+                <p class="text-secondary">Gotta catch 'em all!</p>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Cards</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="navs">Packs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="navs">Daily Games</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div id="juego">
+            <!-- Aquí se mostrará el Pokémon -->
+            
+        </div>
+        <div id="puntaje">Puntaje: 0</div>  
+        <div id="tiempo">Tiempo restante: 60 segundos</div>
+        <div id="puntos_perdidos">Puntos perdidos: 0 </div>
+    <!-- Bootstrap JS (opcional, si necesitas funcionalidad de Bootstrap) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script>
+        var puntaje = 0;
+        var tiempoRestante = 60;
+        var multiplicadorFallos = 2;
+        var fallos = 0;
+        var puntosPerdidos = 0;
+
+        function crearPokemon() {
+            var juego = document.getElementById('juego');
+            var pokemon = document.createElement('div');
+            pokemon.classList.add('pokemon');
+            pokemon.style.left = Math.random() * (juego.offsetWidth - 50) + 'px';
+            pokemon.style.top = Math.random() * (juego.offsetHeight - 50) + 'px';
+            juego.appendChild(pokemon);
+
+            pokemon.addEventListener('click', function() {
+                this.remove();
+                puntaje += Math.floor(Math.random() * 10) + 1;
+                actualizarPuntaje();
+            });
+
+            // Mover el Pokémon continuamente dentro del juego
+            var velocidadX = (Math.random() - 0.5) * 10; // Velocidad horizontal
+            var velocidadY = (Math.random() - 0.5) * 10; // Velocidad vertical
+            setInterval(function() {
+                var posX = parseFloat(pokemon.style.left) + velocidadX;
+                var posY = parseFloat(pokemon.style.top) + velocidadY;
+
+                // Verificar si el Pokémon choca con los bordes del juego y cambiar su dirección
+                if (posX < 0 || posX > juego.offsetWidth - 50) {
+                    velocidadX *= -1;
+                }
+                if (posY < 0 || posY > juego.offsetHeight - 50) {
+                    velocidadY *= -1;
+                }
+
+                pokemon.style.left = posX + 'px';
+                pokemon.style.top = posY + 'px';
+            }, 10); // Cambiar la posición del Pokémon cada 10ms
+        }
+
+        function crearSeñuelo() {
+            var juego = document.getElementById('juego');
+            var señuelo = document.createElement('div');
+            señuelo.classList.add('pokemon');
+            señuelo.style.left = Math.random() * (juego.offsetWidth - 50) + 'px';
+            señuelo.style.top = Math.random() * (juego.offsetHeight - 50) + 'px';
+
+            // Generar un número aleatorio entre 1 y 1025 para la URL del señuelo
+            var numeroPokemon = Math.floor(Math.random() * 1025) + 1;
+            señuelo.style.backgroundImage = 'url("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/' + numeroPokemon + '.png")';
+            juego.appendChild(señuelo);
+
+            señuelo.addEventListener('click', function() {
+                this.remove();
+                puntaje -= 5; // Restar 5 puntos por tocar un señuelo
+                puntosPerdidos += 5; // Aumentar los puntos perdidos
+                actualizarPuntaje();
+                actualizarPuntosPerdidos();
+            });
+
+            // Mover el señuelo continuamente dentro del juego
+            var velocidadX = (Math.random() - 0.5) * 10; // Velocidad horizontal
+            var velocidadY = (Math.random() - 0.5) * 10; // Velocidad vertical
+            setInterval(function() {
+                var posX = parseFloat(señuelo.style.left) + velocidadX;
+                var posY = parseFloat(señuelo.style.top) + velocidadY;
+
+                // Verificar si el señuelo choca con los bordes del juego y cambiar su dirección
+                if (posX < 0 || posX > juego.offsetWidth - 50) {
+                    velocidadX *= -1;
+                }
+                if (posY < 0 || posY > juego.offsetHeight - 50) {
+                    velocidadY *= -1;
+                }
+
+                señuelo.style.left = posX + 'px';
+                señuelo.style.top = posY + 'px';
+            }, 10); // Cambiar la posición del señuelo cada 10ms
+        }
+
+        function actualizarPuntaje() {
+            document.getElementById('puntaje').innerText = 'Puntaje: ' + puntaje;
+        }
+
+        function actualizarPuntosPerdidos() {
+            document.getElementById('puntos_perdidos').innerText = 'Puntos perdidos: ' + puntosPerdidos;
+        }
+
+        function actualizarTiempo() {
+            tiempoRestante--;
+            document.getElementById('tiempo').innerText = 'Tiempo restante: ' + tiempoRestante + ' segundos';
+            if (tiempoRestante <= 0) {
+                alert('¡Se acabó el tiempo! Tu puntaje final es: ' + puntaje);
+                window.location.href = 'http://localhost:3001/estadisticas/';
+            }
+        }
+
+        function restarPuntosPorFallo() {
+            puntaje -= fallos * multiplicadorFallos;
+            puntosPerdidos += fallos * multiplicadorFallos; // Aumentar los puntos perdidos por fallo
+            actualizarPuntaje();
+            actualizarPuntosPerdidos();
+            fallos = 0;
+        }
+
+        document.getElementById('juego').addEventListener('click', restarPuntosPorFallo);
+
+        setInterval(crearPokemon, 2000);
+        setInterval(crearSeñuelo, 5000); // Generar señuelo cada 5 segundos
+        setInterval(actualizarTiempo, 1000);
+    </script>
+</body>
+</html>

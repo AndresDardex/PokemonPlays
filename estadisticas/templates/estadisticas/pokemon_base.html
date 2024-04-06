@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <a href="http://localhost:3001/estadisticas/" class="text-decoration-none">
+    <title >Pokémon TCG</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'estadisticas\css\styles.css' %}">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-light" >Pokémon TCG</h1>
+                <p class="text-secondary" >Gotta catch 'em all!</p>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Cards</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="navs">Packs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="navs">Daily Games</a>
+                    </li>
+                </ul>
+                <form action="{% url 'buscar_pokemon' %}" method="GET" class="mt-3">
+                    <div class="input-group">
+                        <input type="text" id="pokemon-buscado" class="form-control" name="pokemon_buscado" placeholder="Search Pokemon...">
+                        <button type="submit" class="btn btn-primary" id="button-addon2"><i class="fas fa-search"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 id="nombrePokemon">{{ pokemon.Name }}</h1>
+                <h5 id="elemento">{{ pokemon.Element }}</h5>
+                <div class="pokemon-circle" id="pokemon-circle">
+                    {% if artwork_url %}
+                        <img src="{{ artwork_url }}" alt="{{ pokemon.Name }}">
+                    {% else %}
+                        <p>Artwork no disponible</p>
+                    {% endif %}
+                </div>
+                <div class="text-secondary" id="chatResponse"></div>
+                <div class="stats-container">
+                    <div class="stat">
+                        <span class="stat-name">HP:</span>
+                        <span class="stat-value">{{ pokemon.HP }}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-name">Attack:</span>
+                        <span class="stat-value">{{ pokemon.Attack }}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-name">Defense:</span>
+                        <span class="stat-value">{{ pokemon.Defense }}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-name">SP ATK:</span>
+                        <span class="stat-value">{{ pokemon.Special_Attack }}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-name">SP DEF:</span>
+                        <span class="stat-value">{{ pokemon.Special_Defense }}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-name">Speed:</span>
+                        <span class="stat-value">{{ pokemon.Speed }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS (opcional, si necesitas funcionalidad de Bootstrap) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script>
+        // Función para cambiar dinámicamente el fondo del círculo del Pokémon según su poder total
+        function changePokemonCircleBackground() {
+            var total = document.getElementById('elemento').textContent;
+            let imageUrl;
+            if (total == 'fire') {
+                imageUrl = "https://i.gifer.com/fxy1.gif";
+            } else if (total == 'water' || total == 'ice') {
+                imageUrl = "https://i.gifer.com/ELi1.gif";
+            } else if (total == 'psychic' || total == 'poison') {
+                imageUrl = "https://i.gifer.com/fxTQ.gif";
+            } else if (total == 'electric' || total == 'dragon') {
+                imageUrl = "https://i.gifer.com/OrSG.gif";
+            } else if (total == 'rock' || total == 'steel') {
+                imageUrl = "https://i.gifer.com/DBnp.gif";
+            } else if (total == 'grass' || total == 'bug' || total == 'ground') {
+                imageUrl = "https://i.gifer.com/42Wu.gif";
+            } else if (total == 'normal' || total == 'fairy' || total == 'fighting') {
+                imageUrl = "https://i.gifer.com/3QAe.gif";
+            } else if (total == 'flying' || total == 'ghost' || total == 'dark') {
+                imageUrl = "https://i.gifer.com/BvN0.gif";
+            } else {
+                imageUrl = "https://i.gifer.com/OrSG.gif";
+            }
+            document.getElementById("pokemon-circle").style.backgroundImage = `url('${imageUrl}')`;
+        }
+
+        // Función para mostrar el nombre del Pokémon en el elemento chatResponse
+        function pokemonDescription() {
+            var nombrePokemon = document.getElementById('nombrePokemon').textContent;
+            var chatResponse = document.getElementById('chatResponse');
+            $.post('http://localhost:11434/api/generate', JSON.stringify({model:'llama2', stream:false , prompt: 'do one paragraph of about this pokemon ' + nombrePokemon })).done(function(respuesta){
+      
+                // Aquí puedes agregar la lógica para enviar la pregunta al chatbot y recibir la respuesta
+                chatResponse.innerText = respuesta.response;
+          });
+        }
+          
+
+        // Llama a las funciones necesarias al cargar la página
+        window.onload = function() {
+            changePokemonCircleBackground();
+            pokemonDescription();
+        };
+    </script>
+    <script src="{% static 'estadisticas/main.js' %}"></script>
+</body>
+</html>
